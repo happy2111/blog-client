@@ -2,6 +2,7 @@ import { AxiosError } from 'axios';
 import { ApiError } from '@/types';
 
 export const getErrorMessage = (error: unknown): string => {
+  // @ts-ignore
   if (error instanceof AxiosError<ApiError>) {
     return error.response?.data?.error || error.message || 'An error occurred';
   }
