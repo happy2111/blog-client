@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const CreatePostForm: React.FC = () => {
@@ -22,7 +22,7 @@ export const CreatePostForm: React.FC = () => {
 
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error('Выберите файл изображения');
       return;
     }
 
@@ -42,23 +42,20 @@ export const CreatePostForm: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     const files = e.dataTransfer.files;
-    if (files[0]) {
-      handleFileSelect(files[0]);
-    }
+    if (files[0]) handleFileSelect(files[0]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedFile) {
-      toast.error('Please select an image');
+      toast.error('Прикрепите файл');
       return;
     }
 
     if (!caption.trim()) {
-      toast.error('Please add a caption');
+      toast.error('Укажите название документа');
       return;
     }
 
@@ -66,11 +63,11 @@ export const CreatePostForm: React.FC = () => {
       { caption: caption.trim(), visibility, file: selectedFile },
       {
         onSuccess: () => {
-          toast.success('Post created successfully');
+          toast.success('Документ успешно создан');
           router.push('/home');
         },
         onError: (error: any) => {
-          const errorMsg = error.response?.data?.error || 'Failed to create post';
+          const errorMsg = error.response?.data?.error || 'Не удалось создать документ';
           toast.error(errorMsg);
         },
       }
@@ -78,31 +75,40 @@ export const CreatePostForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card>
+    <div className="max-w-2xl">
+      <Card className="border-border/60 shadow-sm">
         <CardHeader>
-          <CardTitle>Create New Post</CardTitle>
-          <CardDescription>Share your thoughts with the community</CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle>Новый документ</CardTitle>
+              <CardDescription>Заполните форму для регистрации документа в системе</CardDescription>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* File Upload */}
             <div>
-              <label className="text-sm font-medium block mb-2">Upload Image</label>
+              <label className="text-sm font-medium block mb-2">Название / описание</label>
+              <Textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Введите название документа..."
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium block mb-2">Вложение</label>
               {preview ? (
-                <div className="relative">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="w-full h-96 object-cover rounded-lg"
-                  />
+                <div className="relative rounded-lg border border-border overflow-hidden">
+                  <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setPreview(null);
-                    }}
+                    onClick={() => { setSelectedFile(null); setPreview(null); }}
                     className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-lg"
                   >
                     <X className="h-4 w-4" />
@@ -113,57 +119,44 @@ export const CreatePostForm: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="border-2 border-dashed border-border rounded-lg p-12 text-center cursor-pointer hover:border-primary/50 transition"
+                  className="border-2 border-dashed border-border rounded-lg p-10 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition"
                 >
-                  <Upload className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                  <p className="font-medium">Click to upload or drag and drop</p>
-                  <p className="text-sm text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                  <Upload className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                  <p className="font-medium text-sm">Перетащите файл или нажмите для загрузки</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF до 10 МБ</p>
                 </div>
               )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files?.[0]) {
-                    handleFileSelect(e.target.files[0]);
-                  }
-                }}
+                onChange={(e) => { if (e.target.files?.[0]) handleFileSelect(e.target.files[0]); }}
                 className="hidden"
               />
             </div>
 
-            {/* Caption */}
             <div>
-              <label className="text-sm font-medium block mb-2">Caption</label>
-              <Textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Write a caption for your post..."
-                rows={4}
-              />
-            </div>
-
-            {/* Visibility */}
-            <div>
-              <label className="text-sm font-medium block mb-2">Visibility</label>
+              <label className="text-sm font-medium block mb-2">Уровень доступа</label>
               <Select
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as 'PUBLIC' | 'PRIVATE')}
               >
-                <option value="PUBLIC">Public</option>
-                <option value="PRIVATE">Private (Followers only)</option>
+                <option value="PUBLIC">Открытый — виден всем</option>
+                <option value="PRIVATE">Конфиденциальный — только для контактов</option>
               </Select>
             </div>
 
-            {/* Submit Button */}
-            <Button type="submit" className="w-full" isLoading={isLoading}>
-              Publish Post
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => router.back()}>
+                Отмена
+              </Button>
+              <Button type="submit" className="flex-1" isLoading={isLoading}>
+                Сохранить документ
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
     </div>
   );
 };
-

@@ -1,17 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Header } from '@/components/Header';
+import { ErpLayout } from '@/components/layouts/ErpLayout';
 import { Feed } from '@/components/Feed';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="py-8">
-        <Feed />
-      </main>
-    </div>
+    <ErpLayout title="Панель управления" subtitle="Обзор ключевых показателей и активности">
+      <Feed />
+    </ErpLayout>
   );
 }
-

@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Blog - Share Your Stories",
-  description: "Instagram-like blog application",
+  title: "BizFlow CRM — Система управления",
+  description: "CRM / ERP система для управления документами, контактами и сделками",
 };
 
 export default function RootLayout({

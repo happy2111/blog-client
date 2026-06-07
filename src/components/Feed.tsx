@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useFeed } from '@/hooks/usePosts';
-import { Post } from '@/types';
-import { PostCard } from '@/components/PostCard';
+import { DocumentTable } from '@/components/DocumentTable';
+import { DashboardStats, PipelineWidget, TasksWidget } from '@/components/DashboardWidgets';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Link from 'next/link';
 
 export const Feed: React.FC = () => {
@@ -22,55 +23,82 @@ export const Feed: React.FC = () => {
 
   if (isLoading && page === 1) {
     return (
-      <div className="max-w-2xl mx-auto space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="w-full h-150" />
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <p className="text-destructive mb-4">Failed to load posts</p>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
-      </div>
-    );
-  }
-
-  if (posts.length === 0 && page === 1) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <p className="text-muted-foreground mb-4">No posts in your feed yet</p>
-        <p className="text-sm text-muted-foreground mb-6">
-          Follow users to see their posts here
-        </p>
-        <Link href="/explore">
-          <Button>Explore Posts</Button>
-        </Link>
+      <div className="text-center py-12">
+        <p className="text-destructive mb-4">Не удалось загрузить данные</p>
+        <Button onClick={() => window.location.reload()}>Повторить</Button>
       </div>
     );
   }
 
   return (
-    <InfiniteScroll
-      dataLength={posts.length}
-      next={handleLoadMore}
-      hasMore={hasMore}
-      loader={<Skeleton className="w-full h-150" />}
-      endMessage={
-        <p className="text-center text-muted-foreground py-4">
-          {posts.length > 0 ? "You've reached the end" : 'No posts found'}
-        </p>
-      }
-    >
-      <div className="max-w-2xl mx-auto space-y-4">
-        {posts.map((post: Post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
+    <div className="space-y-6">
+      <DashboardStats />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <PipelineWidget />
+        </div>
+        <TasksWidget />
       </div>
-    </InfiniteScroll>
+
+      <Card className="border-border/60 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <div>
+            <CardTitle className="text-base">Лента активности</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Документы от ваших контактов
+            </p>
+          </div>
+          <Link href="/explore">
+            <Button variant="outline" size="sm">Весь каталог</Button>
+          </Link>
+        </CardHeader>
+        <CardContent className="p-0 pb-2">
+          {posts.length === 0 && page === 1 ? (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground mb-2">Нет активности</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Добавьте контакты, чтобы видеть их документы
+              </p>
+              <Link href="/explore">
+                <Button>Открыть каталог</Button>
+              </Link>
+            </div>
+          ) : (
+            <InfiniteScroll
+              dataLength={posts.length}
+              next={handleLoadMore}
+              hasMore={hasMore}
+              loader={<Skeleton className="mx-4 h-12 w-auto" />}
+              endMessage={
+                posts.length > 0 ? (
+                  <p className="text-center text-xs text-muted-foreground py-4">
+                    Все записи загружены
+                  </p>
+                ) : null
+              }
+            >
+              <DocumentTable
+                posts={posts}
+                emptyMessage="Нет документов в ленте"
+              />
+            </InfiniteScroll>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
-

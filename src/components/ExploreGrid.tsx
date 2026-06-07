@@ -3,10 +3,13 @@
 import React, { useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useExplore } from '@/hooks/usePosts';
-import { PostCard } from '@/components/PostCard';
+import { DocumentTable } from '@/components/DocumentTable';
 import { PostDetailModal } from '@/components/PostDetailModal';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Post } from '@/types';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Filter, Download } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 export const ExploreGrid: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -28,10 +31,9 @@ export const ExploreGrid: React.FC = () => {
 
   if (isLoading && page === 1) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
-        {[...Array(12)].map((_, i) => (
-          <Skeleton key={i} className="w-full h-80" />
-        ))}
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -39,36 +41,38 @@ export const ExploreGrid: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-destructive">Failed to load posts</p>
+        <p className="text-destructive">Не удалось загрузить каталог</p>
       </div>
     );
   }
 
   return (
     <>
+      <Card className="border-border/60 shadow-sm mb-4">
+        <CardContent className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Filter className="h-4 w-4" />
+            <span>Всего записей: <strong className="text-foreground">{posts.length}</strong></span>
+          </div>
+          <Button variant="outline" size="sm" disabled>
+            <Download className="h-4 w-4 mr-2" />
+            Экспорт
+          </Button>
+        </CardContent>
+      </Card>
+
       <InfiniteScroll
         dataLength={posts.length}
         next={handleLoadMore}
         hasMore={hasMore}
-        loader={
-          <div className="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="w-full h-80" />
-            ))}
-          </div>
-        }
+        loader={<Skeleton className="h-12 w-full mt-2" />}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
-          {posts.map((post: any) => (
-            <div
-              key={post.id}
-              className="cursor-pointer"
-              onClick={() => handlePostClick(post)}
-            >
-              <PostCard post={post} />
-            </div>
-          ))}
-        </div>
+        <DocumentTable
+          posts={posts}
+          onRowClick={handlePostClick}
+          showActions
+          emptyMessage="Каталог пуст"
+        />
       </InfiniteScroll>
 
       <PostDetailModal
@@ -79,5 +83,3 @@ export const ExploreGrid: React.FC = () => {
     </>
   );
 };
-
-
